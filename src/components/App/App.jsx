@@ -48,6 +48,7 @@ class App extends Component {
         this.state.searchedImages,
         this.state.page
       );
+      console.log(images)
       this.setState({ images: images.hits });
 
       this.setState({ imageCount: images.hits.length });
