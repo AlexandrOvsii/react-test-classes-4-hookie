@@ -1,135 +1,119 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import Searchbar from 'components/Searchbar/Searchbar';
 import * as API from '../common/api';
 import ImageGallery from 'components/ImageGallery/ImageGallery';
 import Button from 'components/Button/Button';
 import Modal from 'components/Modal';
 import Notiflix from 'notiflix';
-import Loader from 'components/Loader/Loader';
+import Loader from '../Loader/Loader';
+import Clock from 'components/Clock';
+import DetailSection from 'components/DetailSection';
 
-class App extends Component {
-  state = {
-    error: false,
-    isLoading: false,
-    searchedImages: null,
-    images: [],
-    page: 1,
-    largeImage: '',
-    showModal: false,
-    noImages: false,
-    imageCount: 0,
-  };
+const App = () => {
+  const [error, setError] = useState(false);
+  const [isLoading, setIsloading] = useState(false);
+  const [searchedImages, setSearchedImages] = useState('');
+  const [imagesData, setImagesData] = useState([]);
+  const [page, setPage] = useState(1);
+  const [largeImage, setLargeImage] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [noImages, setNoImages] = useState(false);
+  const [imageCount, setImageCount] = useState(0);
 
-  componentDidUpdate(_, prevState) {
-    if (prevState.searchedImages !== this.state.searchedImages) {
-      this.fetchImages();
-    }
-  }
 
-  componentDidMount() {
-    window.addEventListener('click', this.openModal);
-  }
+  useEffect(() => {
+    window.addEventListener('click', openModal);
 
-  componentWillUnmount() {
-    window.removeEventListener('click', this.openModal);
-  }
+    return () => {
+      window.removeEventListener('click', openModal);
+    };
+  }, []);
 
-  handleSearchForm = e => {
+  const handleSearchForm = async e => {
     e.preventDefault();
-    const searchedImages = e.currentTarget.elements.searchInput.value;
-    this.setState({ searchedImages });
-    e.currentTarget.reset();
-  };
+    const searchedImagesValue = e.currentTarget.elements.searchInput.value;
+    setSearchedImages(searchedImagesValue);
 
-  fetchImages = async () => {
+    if (searchedImagesValue === '') {
+      return;
+    }
+
     try {
-      this.setState({ isLoading: true });
-      const images = await API.getImages(
-        this.state.searchedImages,
-        this.state.page
-      );
-      this.setState({ images: images.hits });
+      setIsloading(true);
+      const imagesData = await API.getImages(searchedImages, page);
+      console.log(imagesData);
 
-      this.setState({ imageCount: images.hits.length });
-
-      if (images.hits.length === 0) {
-        this.setState({ noImages: true });
+      setImagesData(prevState => [...prevState, ...imagesData.hits]);
+      setImageCount(prevCount => prevCount + imagesData.hits.length);
+      e.target.reset()
+      if (imagesData.hits.length === 0) {
+        setNoImages(true);
       }
     } catch (error) {
-      this.setState({ error: true });
+      setError(true);
     } finally {
-      this.setState({ isLoading: false });
+      setIsloading(false);
     }
   };
 
-  loadMoreImages = async () => {
+  const loadMoreImages = async () => {
     try {
-      this.setState({ isLoading: true });
-      const images = await API.getImages(
-        this.state.searchedImages,
-        this.state.page
-      );
+      setIsloading(true);
+      const images = await API.getImages(searchedImages, page);
 
-      console.log('Total Hits:', images.totalHits);
-
-      if (this.state.imageCount >= 500) {
+      if (imageCount >= 500) {
         console.log('Конец количества изображений');
-        this.setState({ noImages: true });
+        setNoImages(true);
       }
+      setImagesData(prevState => [...prevState, ...images.hits]);
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...images.hits],
-      }));
-      this.setState(prevState => ({
-        imageCount: prevState.imageCount + images.hits.length,
-      }));
+      setImageCount(prevState => prevState + images.hits.length);
+
+      setPage(prevState => prevState + 1);
     } catch (error) {
-      this.setState({ error: true });
+      setError(true);
     } finally {
-      this.setState({ isLoading: false });
+      setIsloading(false);
     }
   };
 
-  loadMore = () => {
-    this.setState({ page: this.state.page + 1 });
-    this.loadMoreImages();
-  };
-
-  openModal = e => {
+  const openModal = e => {
     if (e.target.nodeName !== 'IMG') {
       return;
     }
-    this.setState({ showModal: true, largeImage: e.target });
+    setShowModal(true);
+    setLargeImage(e.target);
   };
 
-  closeModal = () => {
-    this.setState({ showModal: false });
+  const closeModal = () => {
+    setShowModal(false);
   };
 
-  render() {
-    const { error, isLoading, images, page, showModal, largeImage, noImages } =
-      this.state;
-    return (
-      <div>
-        <Searchbar handleSearchForm={this.handleSearchForm} />
-        {isLoading && <Loader />}
-        <ImageGallery images={images} />
-        {error &&
-          Notiflix.Notify.failure('Something wrong, please refresh a page')}
-        {noImages &&
-          Notiflix.Notify.info(
-            'Sorry, no more images in your response. Try another word'
-          )}
-        {images.length && noImages === false && (
-          <Button page={page} loadMore={this.loadMore} />
+  return (
+    <div>
+      <Searchbar handleSearchForm={handleSearchForm} />
+
+      {isLoading && <Loader />}
+
+      <ImageGallery images={imagesData} />
+
+      {error &&
+        Notiflix.Notify.failure('Something wrong, please refresh a page')}
+
+      {noImages &&
+        Notiflix.Notify.info(
+          'Sorry, no more images in your response. Try another word'
         )}
-        {showModal && (
-          <Modal largeImage={largeImage} closeModal={this.closeModal} />
-        )}
-      </div>
-    );
-  }
-}
+
+      {imagesData.length > 0 && noImages === false && (
+        <Button loadMore={loadMoreImages} />
+      )}
+      <Clock />
+      <DetailSection />
+      {showModal && <Modal largeImage={largeImage} closeModal={closeModal} />}
+    </div>
+  );
+};
 
 export default App;
 

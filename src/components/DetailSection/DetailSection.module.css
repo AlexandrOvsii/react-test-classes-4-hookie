@@ -1,0 +1,13 @@
+.Btn {
+  min-width: 50px;
+  min-height: 50px;
+  transition: all 1s;
+  border-radius: 5px;
+  border: 0px;
+}
+
+.isActive {
+  background-color: green;
+  color: white;
+  border: 1px solid black;
+}

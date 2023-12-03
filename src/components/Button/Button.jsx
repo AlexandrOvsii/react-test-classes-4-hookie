@@ -1,10 +1,10 @@
 import React from 'react';
 import css from './Button.module.css'
 
-function Button({page, loadMore}) {
+function Button({loadMore}) {
 
   return <div className={css.btnWrapper}>
-    <button className={css.Button} type="button" onClick={() => loadMore(page)}>Load More</button>
+    <button className={css.Button} type="button" onClick={() => loadMore()}>Load More</button>
   </div>;
 }
 

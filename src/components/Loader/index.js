@@ -1,0 +1,1 @@
+export {defaulf} from './Loader.jsx'
