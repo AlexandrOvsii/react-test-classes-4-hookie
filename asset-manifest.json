@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/react-test-classes-4-hookie/static/css/main.b09f8617.css",
-    "main.js": "/react-test-classes-4-hookie/static/js/main.7f87fbcd.js",
+    "main.js": "/react-test-classes-4-hookie/static/js/main.29b66772.js",
     "index.html": "/react-test-classes-4-hookie/index.html",
     "main.b09f8617.css.map": "/react-test-classes-4-hookie/static/css/main.b09f8617.css.map",
-    "main.7f87fbcd.js.map": "/react-test-classes-4-hookie/static/js/main.7f87fbcd.js.map"
+    "main.29b66772.js.map": "/react-test-classes-4-hookie/static/js/main.29b66772.js.map"
   },
   "entrypoints": [
     "static/css/main.b09f8617.css",
-    "static/js/main.7f87fbcd.js"
+    "static/js/main.29b66772.js"
   ]
 }
